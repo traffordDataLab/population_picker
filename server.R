@@ -14,6 +14,7 @@ shinyServer(function(input, output) {
     
     output$map <- renderLeaflet({
         leaflet() %>%
+            setMaxBounds(-2.478454, 53.357425, -2.253022, 53.480362) %>% 
             addTiles(
                 urlTemplate = "",
                 attribution = '<a href="https://www.ons.gov.uk/methodology/geography/licences">Contains OS data © Crown copyright and database right (2019)</a>',
