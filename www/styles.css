@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+@font-face {
+  font-family: 'Open Sans', sans-serif;
+}
+
+div {
+  font-family: 'Open Sans', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, .header {
+  font-family: 'Open Sans', sans-serif;
+}
+
+a {
+  color: #fc6721;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #fc6721;
+  text-decoration: underline;
+}
+
+a:focus {
+  color: #fc6721;
+  text-decoration: none;
+  outline: none;
+  outline-offset: 0;
+}
+
+.headerContainer a:hover {
+  text-decoration: none;
+}
+
+button:active {
+  box-shadow: none !important;
+}
+
+.homeMenuButtonText {
+  text-align: left;
+  word-wrap: break-word;
+  white-space: pre-line;
+}
+
+.homeMenuButtonText:hover {
+  color: #333333;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* style sliderInput */
+
+.irs-bar {
+  border-top: #bdbdbd;
+  border-bottom: #bdbdbd;
+  background: #bdbdbd;
+} 
+
+.irs-bar-edge {
+  background: #bdbdbd;
+  border: #bdbdbd;
+}
+
+.irs-single {
+  background: #bdbdbd;
+}
+
+.irs-grid-pol {
+  background: #bdbdbd;
+  border-color: #bdbdbd;
+}
+
+.irs-from {
+  background: #bdbdbd;
+  border-color: #bdbdbd;
+}
+
+.irs-to {
+  background: #bdbdbd;
+  border-color: #bdbdbd;
+}
+
+/* suppress data loading error messages */
+.shiny-output-error { visibility: hidden; }
+.shiny-output-error:before { visibility: hidden; }
