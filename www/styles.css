@@ -53,6 +53,11 @@ ul {
   margin: 0;
 }
 
+/* increase box padding */
+.box-body {
+  padding-bottom: 20px;
+}
+
 /* style sliderInput */
 
 .irs-bar {
@@ -88,3 +93,4 @@ ul {
 /* suppress data loading error messages */
 .shiny-output-error { visibility: hidden; }
 .shiny-output-error:before { visibility: hidden; }
+

@@ -83,7 +83,7 @@ shinyServer(function(input, output) {
                 includeHTML("help.html"),
                 leafletOutput("map"),
                 div(
-                    style = "position: absolute; left: 2.2em",
+                    style = "position: absolute; left: 2.2em; bottom: 0.5em;",
                     dropdown(
                         radioButtons(
                             "geography",
@@ -455,7 +455,7 @@ shinyServer(function(input, output) {
                 uiOutput("slide")
             ),
             div(
-                style = "position: absolute; left: 1.5em",
+                style = "position: absolute; left: 1.5em; bottom: 0.5em;",
                 dropdown(
                     radioGroupButtons(
                         inputId = "plot_selection",
@@ -523,20 +523,6 @@ shinyServer(function(input, output) {
         }
     )
     
-    # output$download <- renderUI({
-    #     div(
-    #         style = "position: absolute; left: 1.5em; bottom: 0.5em;",
-    #         dropdown(
-    #             downloadButton(outputId = "downloadData", label = "Download data for single year of age"),
-    #             icon = icon("download"),
-    #             size = "s",
-    #             style = "jelly",
-    #             width = "200px",
-    #             up = TRUE
-    #         )
-    #     )
-    # })
-    # 
     output$pop_table <- renderUI({
         validate(need(clickedIds$ids, message = FALSE))
         
@@ -550,7 +536,7 @@ shinyServer(function(input, output) {
                 tableOutput('table')
             ),
             div(
-                style = "position: absolute; left: 1.5em;",
+                style = "position: absolute; left: 1.5em;; bottom: 0.5em;",
                 dropdown(
                     downloadButton(outputId = "downloadData", label = "Download data for single year of age"),
                     icon = icon("download"),

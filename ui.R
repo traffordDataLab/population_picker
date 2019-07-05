@@ -21,11 +21,8 @@ shinyUI(fluidPage(
   br(),
   fluidRow(
     uiOutput("pop_map"),
-    br(),
     uiOutput("pop_plot"),
-    br(),
-    uiOutput("pop_table"),
-    br()
+    uiOutput("pop_table")
   ),
   br(),
   br(),
