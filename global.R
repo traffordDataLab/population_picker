@@ -1,5 +1,6 @@
 library(shiny)
 library(tidyverse)
+library(scales)
 library(ggpol)
 library(sf)
 library(leaflet)
