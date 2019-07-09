@@ -1,4 +1,5 @@
 shinyServer(function(input, output) {
+    
     layer <- reactive({
         filename <- paste0("data/", input$geography, ".geojson")
         st_read(filename)
@@ -10,11 +11,78 @@ shinyServer(function(input, output) {
         clickedIds$ids <- NULL
     })
     
+    area_data  <- reactive({
+        filter(pop, area_code %in% clickedIds$ids)
+    })
+    
+    pyramid_data <- reactive({
+        if (input$plot_selection == "single_year") {
+            df <- area_data() %>%
+                filter(area_code %in% clickedIds$ids, gender != "Persons")
+        }
+        else {
+            df <- area_data() %>%
+                filter(area_code %in% clickedIds$ids, gender != "Persons") %>%
+                mutate(
+                    gender = factor(gender, levels = c("Males", "Females")),
+                    age = as.integer(age),
+                    ageband = cut(
+                        age,
+                        breaks = c(
+                            0,
+                            5,
+                            10,
+                            15,
+                            20,
+                            25,
+                            30,
+                            35,
+                            40,
+                            45,
+                            50,
+                            55,
+                            60,
+                            65,
+                            70,
+                            75,
+                            80,
+                            85,
+                            90,
+                            120
+                        ),
+                        labels = c(
+                            "0-4",
+                            "5-9",
+                            "10-14",
+                            "15-19",
+                            "20-24",
+                            "25-29",
+                            "30-34",
+                            "35-39",
+                            "40-44",
+                            "45-49",
+                            "50-54",
+                            "55-59",
+                            "60-64",
+                            "65-69",
+                            "70-74",
+                            "75-79",
+                            "80-84",
+                            "85-89",
+                            "90+"
+                        ),
+                        right = FALSE
+                    )
+                )
+        }
+        
+    })
+    
     ## Map ------------------------------------------------
     
     output$map <- renderLeaflet({
         leaflet() %>%
-            setMaxBounds(-2.478454, 53.357425, -2.253022, 53.480362) %>% 
+            setMaxBounds(-2.478454, 53.357425,-2.253022, 53.480362) %>%
             addTiles(
                 urlTemplate = "",
                 attribution = '<a href="https://www.ons.gov.uk/methodology/geography/licences">Contains OS data © Crown copyright and database right (2019)</a>',
@@ -46,7 +114,7 @@ shinyServer(function(input, output) {
         proxy <- leafletProxy("map")
         clickedIds$ids <- c(clickedIds$ids, click$id)
         clickedPolys <-
-            layer()[layer()$area_code %in% clickedIds$ids, ]
+            layer()[layer()$area_code %in% clickedIds$ids,]
         if (click$id %in% clickedPolys$area_name) {
             nameMatch <-
                 clickedPolys$area_code[clickedPolys$area_name == click$id]
@@ -69,15 +137,7 @@ shinyServer(function(input, output) {
         }
     })
     
-    area_data  <- reactive({
-        filter(pop,
-               area_code %in% clickedIds$ids,
-               age >= input$age[1],
-               age <= input$age[2])
-    })
-    
     output$pop_map <- renderUI({
-        
         div(
             class = "col-sm-12 col-md-6 col-lg-4",
             box(
@@ -85,7 +145,7 @@ shinyServer(function(input, output) {
                 includeHTML("help.html"),
                 leafletOutput("map"),
                 div(
-                    style = "position: absolute; left: 2.2em; bottom: 0.5em;",
+                    style = "position: absolute; left: 1.7em; bottom: 4em;",
                     dropdown(
                         radioButtons(
                             "geography",
@@ -120,33 +180,19 @@ shinyServer(function(input, output) {
     
     ## Plot ------------------------------------------------
     
-    output$slider <- renderUI({
-        
-        sliderInput(
-                "age",
-                label = NULL,
-                min = 0,
-                max = 90,
-                value = c(0, 90),
-                step = ifelse(input$plot_selection == "single_year", 1, 5),
-                ticks = TRUE,
-                post = " years"
-            )
-    })
-    
-    output$plot <- renderggiraph({ 
-        
-        validate(need(clickedIds$ids, message = FALSE)) 
+    output$plot <- renderggiraph({
+        validate(need(nrow(area_data()) != 0, message = FALSE))
         
         if (input$plot_selection == "single_year") {
-            df <- area_data() %>%
-                filter(area_code %in% clickedIds$ids, gender != "Persons") %>%
-                mutate(gender = factor(gender, levels = c("Males", "Females")),
-                       age = as.integer(age),
-                       n = case_when(
-                            gender == "Males" ~ count * -1,
-                            TRUE ~ as.double(count)
-                        ),
+            df <- pyramid_data() %>%
+                group_by(gender, age) %>%
+                summarise(n = sum(count)) %>% 
+                ungroup() %>% 
+                mutate(
+                    gender = factor(gender, levels = c("Males", "Females")),
+                    age = as.integer(age),
+                    n = case_when(gender == "Males" ~ n * -1,
+                                  TRUE ~ as.double(n)),
                     tooltip = case_when(
                         gender == "Males" ~ paste0(
                             "<strong>",
@@ -173,12 +219,17 @@ shinyServer(function(input, output) {
             
             gg <-
                 ggplot(df, aes(
-                    x = factor(age),
+                    x = age,
                     y = n,
                     fill = gender
                 )) +
                 geom_bar_interactive(aes(tooltip = tooltip),
                                      stat = "identity") +
+                scale_x_continuous(breaks = seq(
+                    from = 0,
+                    to = 90,
+                    by = 5
+                )) +
                 scale_fill_manual(
                     values = c("#7FC5DC", "#7FDCC5"),
                     labels = c("Female", "Male")
@@ -236,66 +287,14 @@ shinyServer(function(input, output) {
             
         }
         else {
-            df <- area_data() %>%
-                filter(area_code %in% clickedIds$ids, gender != "Persons") %>%
+            df <- pyramid_data() %>%
+                group_by(gender,
+                         ageband) %>%
+                summarise(n = sum(count)) %>% 
                 mutate(
-                    gender = factor(gender, levels = c("Males", "Females")),
-                    age = as.integer(age),
-                    ageband = cut(
-                        age,
-                        breaks = c(
-                            0,
-                            5,
-                            10,
-                            15,
-                            20,
-                            25,
-                            30,
-                            35,
-                            40,
-                            45,
-                            50,
-                            55,
-                            60,
-                            65,
-                            70,
-                            75,
-                            80,
-                            85,
-                            90,
-                            120
-                        ),
-                        labels = c(
-                            "0-4",
-                            "5-9",
-                            "10-14",
-                            "15-19",
-                            "20-24",
-                            "25-29",
-                            "30-34",
-                            "35-39",
-                            "40-44",
-                            "45-49",
-                            "50-54",
-                            "55-59",
-                            "60-64",
-                            "65-69",
-                            "70-74",
-                            "75-79",
-                            "80-84",
-                            "85-89",
-                            "90+"
-                        ),
-                        right = FALSE
-                    )
-                ) %>%
-                group_by(gender, ageband) %>%
-                summarise(n = sum(count)) %>%
-                mutate(n =
-                        case_when(
-                            gender == "Males" ~ n * -1,
-                            TRUE ~ as.double(n)
-                        ),
+                    n =
+                        case_when(gender == "Males" ~ n * -1,
+                                  TRUE ~ as.double(n)),
                     tooltip = case_when(
                         gender == "Males" ~ paste0(
                             "<strong>",
@@ -387,37 +386,37 @@ shinyServer(function(input, output) {
     })
     
     output$plot_title <- renderUI({
+        validate(need(nrow(area_data()) != 0,  message = FALSE))
         
-        validate(need(clickedIds$ids, message = FALSE))
-        
-            HTML(paste0(
+        HTML(
+            paste0(
                 h4("Population pyramid, ", format(
                     as.Date(unique(area_data()$date), format = "%Y-%b-%d"), "%Y"
                 ), style = "color:#757575;"),
                 prettyNum(
-                    sum(area_data()[area_data()$gender == "Persons",]$count),
+                    sum(area_data()[area_data()$gender == "Persons", ]$count),
                     big.mark = ",",
                     scientific = FALSE
                 ),
-                " residents aged between ", input$age[1], " and ", input$age[2], " years",
-                br(), 
+                " residents",
+                br(),
                 round(
-                    sum(area_data()[area_data()$gender == "Males",]$count) / sum(area_data()[area_data()$gender == "Persons",]$count) *
+                    sum(area_data()[area_data()$gender == "Males", ]$count) / sum(area_data()[area_data()$gender == "Persons", ]$count) *
                         100,
                     1
                 ),
-                "% Male | ",
+                "% Male and ",
                 round(
-                    sum(area_data()[area_data()$gender == "Females",]$count) / sum(area_data()[area_data()$gender == "Persons",]$count) *
+                    sum(area_data()[area_data()$gender == "Females", ]$count) / sum(area_data()[area_data()$gender == "Persons", ]$count) *
                         100,
                     1
                 ),
                 "% Female"
-            ))
+            )
+        )
     })
     
     output$pop_plot <- renderUI({
-        
         div(
             class = "col-sm-12 col-md-6 col-lg-4",
             box(
@@ -425,47 +424,57 @@ shinyServer(function(input, output) {
                 align = "center",
                 htmlOutput("plot_title", inline = TRUE),
                 ggiraphOutput("plot"),
-                br(),
-                uiOutput("slider")
-                ),
+                br()
+            ),
             div(
                 style = "position: absolute; left: 1.5em; bottom: 0.5em;",
-                conditionalPanel(condition = "output.plot",
-                dropdown(
-                    radioGroupButtons(
-                        inputId = "plot_selection",
-                        label = NULL,
-                        choiceNames = c("Single year of age", "Five year age bands"),
-                        choiceValues = c("single_year", "five_years"),
-                        direction = "vertical",
-                        selected = "five_years"
-                    ),
-                    icon = icon("cog"),
-                    size = "s",
-                    style = "jelly",
-                    width = "200px",
-                    up = TRUE
+                conditionalPanel(
+                    condition = "output.plot",
+                    dropdown(
+                        radioGroupButtons(
+                            inputId = "plot_selection",
+                            label = NULL,
+                            choiceNames = c("Single year of age", "Five year age bands"),
+                            choiceValues = c("single_year", "five_years"),
+                            direction = "vertical",
+                            selected = "five_years"
+                        ),
+                        icon = icon("cog"),
+                        size = "s",
+                        style = "jelly",
+                        width = "200px",
+                        up = TRUE
+                    )
+                )
+            ),
+            div(
+                style = "position: absolute; left: 4.5em; bottom: 0.5em;",
+                conditionalPanel(
+                    condition = "output.plot",
+                    dropdown(
+                        downloadButton(outputId = "downloadData", label = "Download data"),
+                        icon = icon("download"),
+                        size = "s",
+                        style = "jelly",
+                        up = TRUE
+                    )
                 )
             )
-            ))
+        )
         
     })
     
     ## Table ------------------------------------------------
     
     output$table_title <- renderUI({
+        validate(need(nrow(area_data()) != 0, message = FALSE))
         
-        validate(need(clickedIds$ids, message = FALSE))
-        
-        HTML(paste(
-            h4("Population by area", style = "color:#757575;")
-        ))
+        HTML(paste(h4("Population by area", style = "color:#757575;")))
         
     })
     
     output$table <- renderTable({
-        
-        validate(need(clickedIds$ids, message = FALSE))
+        validate(need(nrow(area_data()) != 0, message = FALSE))
         
         area_data() %>%
             select(area_name, gender, age, count) %>%
@@ -478,58 +487,41 @@ shinyServer(function(input, output) {
                 Females = prettyNum(Females, big.mark = ",", scientific = FALSE),
                 Males = prettyNum(Males, big.mark = ",", scientific = FALSE),
                 Persons = prettyNum(Persons, big.mark = ",", scientific = FALSE)
-            )
+            ) %>% 
+            select(Area, Males, Females, Persons)
         
     }, bordered = TRUE, align = 'l')
-
+    
     
     output$downloadData <- downloadHandler(
         filename = function() {
             paste("mid-year_population_estimates.csv", sep = "")
         },
         content = function(file) {
-            write.csv(
-                area_data() %>%
-                    filter(gender != "Total") %>%
-                    mutate(Year = format(
-                        as.Date(date, format = "%Y-%b-%d"), "%Y"
-                    )) %>%
-                    select(
-                        Year,
-                        `Area code` = area_code,
-                        `Area name` = area_name,
-                        Geography = geography,
-                        Gender = gender,
-                        Age = age,
-                        Count = count
-                    ) %>%
-                    group_by(`Area code`) %>%
-                    arrange(Age),
-                file,
-                row.names = FALSE
-            )
+            
+            if (input$plot_selection == "single_year") {
+                write.csv(pyramid_data(), file, row.names = FALSE)
+            }
+            else {
+                write.csv(pyramid_data() %>%
+                              group_by(date,
+                                       area_code,
+                                       area_name,
+                                       geography,
+                                       gender,
+                                       ageband) %>%
+                              summarise(n = sum(count)), file, row.names = FALSE)
+            }
         }
     )
     
     output$pop_table <- renderUI({
-        
         div(class = "col-sm-12 col-md-6 col-lg-4",
             box(
                 width = '100%',
                 align = "center",
                 uiOutput("table_title"),
                 tableOutput('table')
-            ),
-            div(
-                style = "position: absolute; left: 1.5em;; bottom: 0.5em;",
-                conditionalPanel(condition = "output.plot",
-                dropdown(
-                    downloadButton(outputId = "downloadData", label = "Download data for single year of age"),
-                    icon = icon("download"),
-                    size = "s",
-                    style = "jelly",
-                    up = TRUE
-                ))
             ))
     })
     
