@@ -20,7 +20,7 @@ la <-
     area_name = GEOGRAPHY_NAME,
     gender = GENDER_NAME,
     age = C_AGE_NAME,
-    count = OBS_VALUE
+    n = OBS_VALUE
   ) %>%
   filter(age != "All Ages") %>%
   mutate(
@@ -33,7 +33,7 @@ la <-
     ),
     age = as.integer(str_trim(str_replace_all(age, "Age.|\\+", "")))
   )  %>%
-  spread(age, count) %>%
+  spread(age, n) %>%
   mutate(
     geography = "Local Authority",
     all_ages = rowSums(select(., `0`:`90`)),
@@ -62,5 +62,12 @@ other_areas <-
 
 pop <- bind_rows(la, other_areas) %>%
   select(-c(all_ages, aged_0_to_15, aged_16_to_64, aged_65_and_over)) %>%
-  gather(age, count, -date, -area_code, -area_name, -geography, -gender) %>%
+  gather(age, n, -date, -area_code, -area_name, -geography, -gender) %>%
   mutate(age = as.integer(age))
+
+england <- read_csv("http://www.nomisweb.co.uk/api/v01/dataset/NM_2002_1.data.csv?geography=2092957699&date=latest&gender=1,2&c_age=101...191&measures=20100&select=date_name,geography_name,geography_code,gender_name,c_age_name,measures_name,obs_value,obs_status_name") %>% 
+  select(area_name = GEOGRAPHY_NAME, gender = GENDER_NAME, age = C_AGE_NAME, n = OBS_VALUE) %>% 
+  mutate(gender = fct_recode(gender, "Females" = "Female", "Males" = "Male"),
+         age = as.integer(parse_number(age)))
+
+

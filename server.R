@@ -23,53 +23,16 @@ shinyServer(function(input, output) {
         else {
             df <- area_data() %>%
                 filter(area_code %in% clickedIds$ids, gender != "Persons") %>%
-                mutate(
-                    gender = factor(gender, levels = c("Males", "Females")),
-                    age = as.integer(age),
+                mutate(age = as.integer(age),
                     ageband = cut(
                         age,
                         breaks = c(
-                            0,
-                            5,
-                            10,
-                            15,
-                            20,
-                            25,
-                            30,
-                            35,
-                            40,
-                            45,
-                            50,
-                            55,
-                            60,
-                            65,
-                            70,
-                            75,
-                            80,
-                            85,
-                            90,
-                            120
+                            0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,120
                         ),
                         labels = c(
-                            "0-4",
-                            "5-9",
-                            "10-14",
-                            "15-19",
-                            "20-24",
-                            "25-29",
-                            "30-34",
-                            "35-39",
-                            "40-44",
-                            "45-49",
-                            "50-54",
-                            "55-59",
-                            "60-64",
-                            "65-69",
-                            "70-74",
-                            "75-79",
-                            "80-84",
-                            "85-89",
-                            "90+"
+                            "0-4","5-9","10-14","15-19","20-24","25-29","30-34",
+                            "35-39","40-44","45-49","50-54","55-59","60-64","65-69",
+                            "70-74","75-79","80-84","85-89","90+"
                         ),
                         right = FALSE
                     )
@@ -78,6 +41,42 @@ shinyServer(function(input, output) {
         
     })
     
+    england_data <- reactive({
+        if (input$plot_selection == "single_year") {
+            df <- england %>% 
+                group_by(gender, age) %>% 
+                summarise(n = sum(n)) %>%
+                ungroup() %>% 
+                mutate(gender = factor(gender, levels = c("Males", "Females")),
+                       percent = round(n/sum(n)*100, 1),
+                       percent = 
+                           case_when(
+                               gender == "Males" ~ percent*-1,
+                               TRUE ~ as.double(percent)))
+        }
+        else {
+            df <- england %>%
+                mutate(ageband = cut(age,
+                                     breaks = c(0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,120),
+                                     labels = c("0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39",
+                                                "40-44","45-49","50-54","55-59","60-64","65-69","70-74",
+                                                "75-79","80-84","85-89","90+"),
+                                     right = FALSE)) %>% 
+                group_by(gender, ageband) %>%
+                summarise(n = sum(n)) %>% 
+                ungroup() %>% 
+                mutate(gender = factor(gender, levels = c("Males", "Females")),
+                       percent = round(n/sum(n)*100, 1),
+                       percent = case_when(
+                           gender == "Males" ~ percent * -1, TRUE ~ as.double(percent)))
+            
+            
+            
+        }
+        
+    })
+
+            
     ## Map ------------------------------------------------
     
     output$map <- renderLeaflet({
@@ -186,17 +185,19 @@ shinyServer(function(input, output) {
         if (input$plot_selection == "single_year") {
             df <- pyramid_data() %>%
                 group_by(gender, age) %>%
-                summarise(n = sum(count)) %>% 
+                summarise(n = sum(n)) %>% 
                 ungroup() %>% 
                 mutate(
                     gender = factor(gender, levels = c("Males", "Females")),
                     age = as.integer(age),
-                    n = case_when(gender == "Males" ~ n * -1,
-                                  TRUE ~ as.double(n)),
+                    percent = round(n/sum(n)*100, 1),
+                    percent = case_when(
+                        gender == "Males" ~ percent * -1, TRUE ~ as.double(percent)
+                    ),
                     tooltip = case_when(
                         gender == "Males" ~ paste0(
                             "<strong>",
-                            comma(n * -1),
+                            percent * -1, "% (", comma(n), ")",
                             "</strong><br/>",
                             "<em>",
                             gender,
@@ -206,7 +207,7 @@ shinyServer(function(input, output) {
                         ),
                         TRUE ~ paste0(
                             "<strong>",
-                            comma(n),
+                            percent, "% (", comma(n), ")",
                             "</strong><br/>",
                             "<em>",
                             gender,
@@ -220,11 +221,11 @@ shinyServer(function(input, output) {
             gg <-
                 ggplot(df, aes(
                     x = age,
-                    y = n,
+                    y = percent,
                     fill = gender
                 )) +
                 geom_bar_interactive(aes(tooltip = tooltip),
-                                     stat = "identity") +
+                                     stat = "identity", alpha = 0.5) +
                 scale_x_continuous(breaks = seq(
                     from = 0,
                     to = 90,
@@ -243,7 +244,7 @@ shinyServer(function(input, output) {
                 coord_flip() +
                 labs(
                     x = NULL,
-                    y = NULL,
+                    y = "% of total population",
                     caption = "Source: Office for National Statistics",
                     fill = NULL
                 ) +
@@ -269,6 +270,7 @@ shinyServer(function(input, output) {
                         size = 11,
                         vjust = 1
                     ),
+                    axis.title.x = element_text(colour = "#757575", size = 10, margin = margin(t = 5)),
                     axis.text.x = element_text(size = 9),
                     axis.text.y = element_text(size = 9),
                     plot.caption = element_text(
@@ -280,6 +282,12 @@ shinyServer(function(input, output) {
                     legend.position = "none"
                 )
             
+            if(input$england == TRUE){
+                gg <- gg + geom_line(data = england_data(), 
+                                     aes(x = age, y = percent, group = gender, colour = gender), stat = "identity", size = 1) +
+                    scale_colour_manual(values = c("#7FC5DC", "#7FDCC5"), labels = c("Female", "Male"))
+            }
+            
             gg <- girafe(ggobj = gg)
             girafe_options(gg,
                            opts_tooltip(use_fill = TRUE),
@@ -288,17 +296,17 @@ shinyServer(function(input, output) {
         }
         else {
             df <- pyramid_data() %>%
-                group_by(gender,
-                         ageband) %>%
-                summarise(n = sum(count)) %>% 
-                mutate(
-                    n =
-                        case_when(gender == "Males" ~ n * -1,
-                                  TRUE ~ as.double(n)),
-                    tooltip = case_when(
+                group_by(gender, ageband) %>%
+                summarise(n = sum(n)) %>% 
+                ungroup() %>% 
+                 mutate(gender = factor(gender, levels = c("Males", "Females")),
+                        percent = round(n/sum(n)*100, 1),
+                        percent = case_when(
+                            gender == "Males" ~ percent * -1, TRUE ~ as.double(percent)),
+                        tooltip = case_when(
                         gender == "Males" ~ paste0(
                             "<strong>",
-                            comma(n * -1),
+                            percent * -1, "% (", comma(n), ")",
                             "</strong><br/>",
                             "<em>",
                             gender,
@@ -308,7 +316,7 @@ shinyServer(function(input, output) {
                         ),
                         TRUE ~ paste0(
                             "<strong>",
-                            comma(n),
+                            percent, "% (", comma(n), ")",
                             "</strong><br/>",
                             "<em>",
                             gender,
@@ -322,11 +330,11 @@ shinyServer(function(input, output) {
             gg <-
                 ggplot(df, aes(
                     x = ageband,
-                    y = n,
+                    y = percent,
                     fill = gender
                 )) +
                 geom_bar_interactive(aes(tooltip = tooltip),
-                                     stat = "identity") +
+                                     stat = "identity", alpha = 0.5) +
                 scale_fill_manual(
                     values = c("#7FC5DC", "#7FDCC5"),
                     labels = c("Female", "Male")
@@ -340,7 +348,7 @@ shinyServer(function(input, output) {
                 coord_flip() +
                 labs(
                     x = NULL,
-                    y = NULL,
+                    y = "% of total population",
                     caption = "Source: Office for National Statistics",
                     fill = NULL
                 ) +
@@ -366,6 +374,7 @@ shinyServer(function(input, output) {
                         size = 11,
                         vjust = 1
                     ),
+                    axis.title.x = element_text(colour = "#757575", size = 10, margin = margin(t = 5)),
                     axis.text.x = element_text(size = 9),
                     axis.text.y = element_text(size = 9),
                     plot.caption = element_text(
@@ -377,6 +386,12 @@ shinyServer(function(input, output) {
                     legend.position = "none"
                 )
             
+            if(input$england == TRUE){
+                gg <- gg + geom_line(data = england_data(), 
+                                     aes(x = ageband, y = percent, group = gender, colour = gender), stat = "identity", size = 1) +
+                    scale_colour_manual(values = c("#7FC5DC", "#7FDCC5"), labels = c("Female", "Male"))
+            }
+
             gg <- girafe(ggobj = gg)
             girafe_options(gg,
                            opts_tooltip(use_fill = TRUE),
@@ -390,24 +405,24 @@ shinyServer(function(input, output) {
         
         HTML(
             paste0(
-                h4("Population pyramid, ", format(
+                h4("Age profile, ", format(
                     as.Date(unique(area_data()$date), format = "%Y-%b-%d"), "%Y"
                 ), style = "color:#757575;"),
                 prettyNum(
-                    sum(area_data()[area_data()$gender == "Persons", ]$count),
+                    sum(area_data()[area_data()$gender == "Persons", ]$n),
                     big.mark = ",",
                     scientific = FALSE
                 ),
                 " residents",
                 br(),
                 round(
-                    sum(area_data()[area_data()$gender == "Males", ]$count) / sum(area_data()[area_data()$gender == "Persons", ]$count) *
+                    sum(area_data()[area_data()$gender == "Males", ]$n) / sum(area_data()[area_data()$gender == "Persons", ]$n) *
                         100,
                     1
                 ),
-                "% Male and ",
+                "% Male | ",
                 round(
-                    sum(area_data()[area_data()$gender == "Females", ]$count) / sum(area_data()[area_data()$gender == "Persons", ]$count) *
+                    sum(area_data()[area_data()$gender == "Females", ]$n) / sum(area_data()[area_data()$gender == "Persons", ]$n) *
                         100,
                     1
                 ),
@@ -439,6 +454,11 @@ shinyServer(function(input, output) {
                             direction = "vertical",
                             selected = "five_years"
                         ),
+                        checkboxInput(
+                            inputId = "england",
+                            label = "Add England",
+                            value = FALSE
+                        ),
                         icon = icon("cog"),
                         size = "s",
                         style = "jelly",
@@ -452,7 +472,7 @@ shinyServer(function(input, output) {
                 conditionalPanel(
                     condition = "output.plot",
                     dropdown(
-                        downloadButton(outputId = "downloadData", label = "Download data"),
+                        downloadButton(outputId = "downloadData", label = "Download underlying data"),
                         icon = icon("download"),
                         size = "s",
                         style = "jelly",
@@ -477,9 +497,9 @@ shinyServer(function(input, output) {
         validate(need(nrow(area_data()) != 0, message = FALSE))
         
         area_data() %>%
-            select(area_name, gender, age, count) %>%
+            select(area_name, gender, age, n) %>%
             group_by(area_name, gender) %>%
-            summarise(n = sum(count)) %>%
+            summarise(n = sum(n)) %>%
             spread(gender, n) %>%
             rename(Area = area_name) %>%
             adorn_totals("row") %>%
@@ -510,7 +530,7 @@ shinyServer(function(input, output) {
                                        geography,
                                        gender,
                                        ageband) %>%
-                              summarise(n = sum(count)), file, row.names = FALSE)
+                              summarise(n = sum(n)), file, row.names = FALSE)
             }
         }
     )
