@@ -4,6 +4,7 @@ shinyUI(fluidPage(
   ),
   tags$style(HTML(".irs-bar {background: #bdbdbd; border-top: none; border-bottom: none}")),
   tags$style(HTML(".irs-bar-edge {border: none; background: none}")),
+  tags$style(HTML("tr:last-child { font-weight: bold }")),
   titlePanel(
     div(
       class = "headerContainer",

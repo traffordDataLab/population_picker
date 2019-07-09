@@ -225,7 +225,7 @@ shinyServer(function(input, output) {
                     fill = gender
                 )) +
                 geom_bar_interactive(aes(tooltip = tooltip),
-                                     stat = "identity", alpha = 0.5) +
+                                     stat = "identity", alpha = 0.6) +
                 scale_x_continuous(breaks = seq(
                     from = 0,
                     to = 90,
@@ -302,7 +302,7 @@ shinyServer(function(input, output) {
                     fill = gender
                 )) +
                 geom_bar_interactive(aes(tooltip = tooltip),
-                                     stat = "identity", alpha = 0.5) +
+                                     stat = "identity", alpha = 0.6) +
                 scale_fill_manual(
                     values = c("#7FC5DC", "#7FDCC5"),
                     labels = c("Female", "Male")
@@ -392,7 +392,7 @@ shinyServer(function(input, output) {
                         ),
                         checkboxInput(
                             inputId = "england",
-                            label = "Add England",
+                            label = "England (2018)",
                             value = FALSE
                         ),
                         icon = icon("cog"),
