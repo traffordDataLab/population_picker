@@ -11,6 +11,42 @@ library(shinydashboard)
 library(shinyWidgets)
 library(ggiraph)
 
+theme_x <- function () { 
+  theme_minimal(base_size = 12, base_family = "Open Sans") %+replace% 
+    theme(
+      plot.margin = unit(c(0.8, 0, 0, 0), "cm"),
+      panel.spacing = unit(0.05, "lines"),
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor = element_blank(),
+      plot.title = element_text(
+        colour = "#757575",
+        size = 14,
+        hjust = 0.5,
+        vjust = 2
+      ),
+      plot.subtitle = element_text(
+        colour = "#757575",
+        size = 11,
+        hjust = 0.5
+      ),
+      strip.text = element_text(
+        colour = "#757575",
+        size = 11,
+        vjust = 1
+      ),
+      axis.title.x = element_text(colour = "#757575", size = 10, margin = margin(t = 5)),
+      axis.text.x = element_text(colour = "#757575", size = 9),
+      axis.text.y = element_text(colour = "#757575", size = 9),
+      plot.caption = element_text(
+        size = 9,
+        colour = "#757575",
+        hjust = 1,
+        margin = margin(t = 15)
+      ),
+      legend.position = "none"
+    )
+}
+
 la <-
   read_csv(
     "http://www.nomisweb.co.uk/api/v01/dataset/NM_2002_1.data.csv?geography=1946157089&date=latest&gender=0...2&c_age=200,101...191&measures=20100&select=date_name,geography_name,geography_code,gender_name,c_age_name,obs_value"

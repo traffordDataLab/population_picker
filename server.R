@@ -248,39 +248,7 @@ shinyServer(function(input, output) {
                     caption = "Source: Office for National Statistics",
                     fill = NULL
                 ) +
-                theme_minimal() +
-                theme(
-                    plot.margin = unit(c(0.8, 0, 0, 0), "cm"),
-                    panel.spacing = unit(0.05, "lines"),
-                    panel.grid.major.y = element_blank(),
-                    panel.grid.minor = element_blank(),
-                    plot.title = element_text(
-                        colour = "#757575",
-                        size = 14,
-                        hjust = 0.5,
-                        vjust = 2
-                    ),
-                    plot.subtitle = element_text(
-                        colour = "#757575",
-                        size = 11,
-                        hjust = 0.5
-                    ),
-                    strip.text = element_text(
-                        colour = "#757575",
-                        size = 11,
-                        vjust = 1
-                    ),
-                    axis.title.x = element_text(colour = "#757575", size = 10, margin = margin(t = 5)),
-                    axis.text.x = element_text(size = 9),
-                    axis.text.y = element_text(size = 9),
-                    plot.caption = element_text(
-                        size = 9,
-                        color = "grey50",
-                        hjust = 1,
-                        margin = margin(t = 15)
-                    ),
-                    legend.position = "none"
-                )
+                theme_x()
             
             if(input$england == TRUE){
                 gg <- gg + geom_line(data = england_data(), 
@@ -352,39 +320,7 @@ shinyServer(function(input, output) {
                     caption = "Source: Office for National Statistics",
                     fill = NULL
                 ) +
-                theme_minimal() +
-                theme(
-                    plot.margin = unit(c(0.8, 0, 0, 0), "cm"),
-                    panel.spacing = unit(0.05, "lines"),
-                    panel.grid.major.y = element_blank(),
-                    panel.grid.minor = element_blank(),
-                    plot.title = element_text(
-                        colour = "#757575",
-                        size = 14,
-                        hjust = 0.5,
-                        vjust = 2
-                    ),
-                    plot.subtitle = element_text(
-                        colour = "#757575",
-                        size = 11,
-                        hjust = 0.5
-                    ),
-                    strip.text = element_text(
-                        colour = "#757575",
-                        size = 11,
-                        vjust = 1
-                    ),
-                    axis.title.x = element_text(colour = "#757575", size = 10, margin = margin(t = 5)),
-                    axis.text.x = element_text(size = 9),
-                    axis.text.y = element_text(size = 9),
-                    plot.caption = element_text(
-                        size = 9,
-                        color = "grey50",
-                        hjust = 1,
-                        margin = margin(t = 15)
-                    ),
-                    legend.position = "none"
-                )
+                theme_x()
             
             if(input$england == TRUE){
                 gg <- gg + geom_line(data = england_data(), 
@@ -452,7 +388,7 @@ shinyServer(function(input, output) {
                             choiceNames = c("Single year of age", "Five year age bands"),
                             choiceValues = c("single_year", "five_years"),
                             direction = "vertical",
-                            selected = "five_years"
+                            selected = "single_year"
                         ),
                         checkboxInput(
                             inputId = "england",
