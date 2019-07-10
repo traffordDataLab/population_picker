@@ -177,6 +177,67 @@ shinyServer(function(input, output) {
         
     })
     
+    ## Areas ------------------------------------------------
+    
+    output$table_title <- renderUI({
+        validate(need(nrow(area_data()) != 0, message = FALSE))
+        
+        HTML(paste(h4("Population by area", style = "color:#757575;")))
+        
+    })
+    
+    output$table <- renderTable({
+        validate(need(nrow(area_data()) != 0, message = FALSE))
+        
+        area_data() %>%
+            select(area_name, gender, age, n) %>%
+            group_by(area_name, gender) %>%
+            summarise(n = sum(n)) %>%
+            spread(gender, n) %>%
+            rename(Area = area_name) %>%
+            adorn_totals("row") %>%
+            mutate(
+                Females = prettyNum(Females, big.mark = ",", scientific = FALSE),
+                Males = prettyNum(Males, big.mark = ",", scientific = FALSE),
+                Persons = prettyNum(Persons, big.mark = ",", scientific = FALSE)
+            ) %>% 
+            select(Area, Males, Females, Persons)
+        
+    }, bordered = TRUE, align = 'l')
+    
+    
+    output$downloadData <- downloadHandler(
+        filename = function() {
+            paste("mid-year_population_estimates.csv", sep = "")
+        },
+        content = function(file) {
+            
+            if (input$plot_selection == "single_year") {
+                write.csv(pyramid_data(), file, row.names = FALSE)
+            }
+            else {
+                write.csv(pyramid_data() %>%
+                              group_by(date,
+                                       area_code,
+                                       area_name,
+                                       geography,
+                                       gender,
+                                       ageband) %>%
+                              summarise(n = sum(n)), file, row.names = FALSE)
+            }
+        }
+    )
+    
+    output$pop_table <- renderUI({
+        div(class = "col-sm-12 col-md-6 col-lg-4",
+            box(
+                width = '100%',
+                align = "center",
+                uiOutput("table_title"),
+                tableOutput('table')
+            ))
+    })
+    
     ## Plot ------------------------------------------------
     
     output$plot <- renderggiraph({
@@ -267,7 +328,7 @@ shinyServer(function(input, output) {
                 group_by(gender, ageband) %>%
                 summarise(n = sum(n)) %>% 
                 ungroup() %>% 
-                 mutate(gender = factor(gender, levels = c("Males", "Females")),
+                mutate(gender = factor(gender, levels = c("Males", "Females")),
                         percent = round(n/sum(n)*100, 1),
                         percent = case_when(
                             gender == "Males" ~ percent * -1, TRUE ~ as.double(percent)),
@@ -408,7 +469,7 @@ shinyServer(function(input, output) {
                 conditionalPanel(
                     condition = "output.plot",
                     dropdown(
-                        downloadButton(outputId = "downloadData", label = "Download underlying data"),
+                        downloadButton(outputId = "downloadData", label = "Download data"),
                         icon = icon("download"),
                         size = "s",
                         style = "jelly",
@@ -418,67 +479,6 @@ shinyServer(function(input, output) {
             )
         )
         
-    })
-    
-    ## Table ------------------------------------------------
-    
-    output$table_title <- renderUI({
-        validate(need(nrow(area_data()) != 0, message = FALSE))
-        
-        HTML(paste(h4("Population by area", style = "color:#757575;")))
-        
-    })
-    
-    output$table <- renderTable({
-        validate(need(nrow(area_data()) != 0, message = FALSE))
-        
-        area_data() %>%
-            select(area_name, gender, age, n) %>%
-            group_by(area_name, gender) %>%
-            summarise(n = sum(n)) %>%
-            spread(gender, n) %>%
-            rename(Area = area_name) %>%
-            adorn_totals("row") %>%
-            mutate(
-                Females = prettyNum(Females, big.mark = ",", scientific = FALSE),
-                Males = prettyNum(Males, big.mark = ",", scientific = FALSE),
-                Persons = prettyNum(Persons, big.mark = ",", scientific = FALSE)
-            ) %>% 
-            select(Area, Males, Females, Persons)
-        
-    }, bordered = TRUE, align = 'l')
-    
-    
-    output$downloadData <- downloadHandler(
-        filename = function() {
-            paste("mid-year_population_estimates.csv", sep = "")
-        },
-        content = function(file) {
-            
-            if (input$plot_selection == "single_year") {
-                write.csv(pyramid_data(), file, row.names = FALSE)
-            }
-            else {
-                write.csv(pyramid_data() %>%
-                              group_by(date,
-                                       area_code,
-                                       area_name,
-                                       geography,
-                                       gender,
-                                       ageband) %>%
-                              summarise(n = sum(n)), file, row.names = FALSE)
-            }
-        }
-    )
-    
-    output$pop_table <- renderUI({
-        div(class = "col-sm-12 col-md-6 col-lg-4",
-            box(
-                width = '100%',
-                align = "center",
-                uiOutput("table_title"),
-                tableOutput('table')
-            ))
     })
     
 })
