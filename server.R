@@ -217,7 +217,7 @@ shinyServer(function(input, output) {
             }
             else {
                 write.csv(pyramid_data() %>%
-                              group_by(date,
+                              group_by(period,
                                        area_code,
                                        area_name,
                                        geography,
@@ -403,7 +403,7 @@ shinyServer(function(input, output) {
         HTML(
             paste0(
                 h4("Age profile, ", format(
-                    as.Date(unique(area_data()$date), format = "%Y-%b-%d"), "%Y"
+                    as.Date(unique(area_data()$period), format = "%Y-%b-%d"), "%Y"
                 ), style = "color:#757575;"),
                 prettyNum(
                     sum(area_data()[area_data()$gender == "Persons", ]$n),
