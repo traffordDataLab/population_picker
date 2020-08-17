@@ -30,7 +30,7 @@ theme_x <- function () {
       axis.text.y = element_text(colour = "#212121", size = 9),
       plot.caption = element_text(
         size = 9,
-        colour = "#757575",
+        colour = "#707070",
         hjust = 1,
         margin = margin(t = 15)
       ),
