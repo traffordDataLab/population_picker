@@ -1,36 +1,44 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans%7CRoboto');
 
-@font-face {
-  font-family: 'Open Sans', sans-serif;
+html, body
+{
+    font-family: 'Open Sans', sans-serif;
 }
 
-div {
-  font-family: 'Open Sans', sans-serif;
+h1, h2, h3, h4, h5, h6
+{
+  font-family: 'Roboto', sans-serif;
+  color: #707070;
 }
 
-h1, h2, h3, h4, h5, h6, .header {
-  font-family: 'Open Sans', sans-serif;
+h1
+{
+  display: inline-block;
 }
 
-a {
-  color: #fc6721;
+a, a:hover, a:focus, a:visited, .leaflet-container a
+{
+    color: #046dc3;
+}
+
+a
+{
   text-decoration: none;
 }
 
-a:hover {
-  color: #fc6721;
+a:hover
+{
   text-decoration: underline;
 }
 
-a:focus {
-  color: #fc6721;
+.headerContainer a:hover
+{
   text-decoration: none;
-  outline: none;
-  outline-offset: 0;
 }
 
-.headerContainer a:hover {
-  text-decoration: none;
+tr:last-child
+{
+  font-weight: bold;
 }
 
 button:active {

@@ -1,8 +1,9 @@
 shinyUI(fluidPage(
+  # Set the language of the page - important for accessibility
+  tags$html(lang = "en-GB"),
   tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
+    tags$link(rel = "stylesheet", href = "styles.css")
   ),
-  tags$style(HTML("tr:last-child { font-weight: bold }")),
   titlePanel(
     div(
       class = "headerContainer",
@@ -15,7 +16,7 @@ shinyUI(fluidPage(
         href = "https://www.trafford.gov.uk",
         target = "_blank"
       ),
-      "Population picker"
+      h1("Population picker")
     ),
     windowTitle = "Population picker"
   ),
