@@ -11,7 +11,8 @@ shinyUI(fluidPage(
         img(
           src = "https://github.com/traffordDataLab/traffordDataLab.github.io/raw/master/images/trafford_council_logo_black_on_white_100px.png",
           style = "position: relative; top: -5px;",
-          height = 60
+          height = 60,
+          alt = "Trafford Council"
         ),
         href = "https://www.trafford.gov.uk",
         target = "_blank"
