@@ -100,11 +100,6 @@ shinyServer(function(input, output) {
                     style = list('color' = '#212121', 'font-family' = 'sans-serif')
                 ),
                 layerId = layer()$area_code
-            ) %>%
-            htmlwidgets::onRender(
-                " function(el, t) {
-        var myMap = this;
-        myMap._container.style['background'] = '#ffffff';}"
             )
     })
     
@@ -126,7 +121,7 @@ shinyServer(function(input, output) {
         } else {
             proxy %>% addPolygons(
                 data = clickedPolys,
-                fillColor = "#FFFF00",
+                fillColor = "#5d77a3",
                 fillOpacity = 0.4,
                 weight = 1,
                 color = "#212121",

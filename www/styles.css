@@ -93,6 +93,12 @@ ul {
     color: #757575 !important;
 }
 
+/* map background */
+#map
+{
+    background-color: #fff !important;
+}
+
 .fa {
     color: #212121;
 }
