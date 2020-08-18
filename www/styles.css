@@ -15,13 +15,18 @@ main, section, header, footer, nav, figure, figcaption
 
 h1, h2, h3, h4, h5, h6
 {
-  font-family: 'Roboto', sans-serif;
-  color: #707070;
+    font-family: 'Roboto', sans-serif;
+    color: #707070;
 }
 
 h1
 {
-  display: inline-block;
+    display: inline-block;
+}
+
+h2
+{
+    font-size: 1.5em;
 }
 
 a, a:hover, a:focus, a:visited, .leaflet-container a
@@ -86,6 +91,18 @@ ul {
 .leaflet-bar a.leaflet-disabled
 {
     color: #757575 !important;
+}
+
+.fa {
+    color: #212121;
+}
+            
+.bttn-jelly.bttn-default {
+    color:#f0f0f0;
+}
+
+.bttn-jelly:hover:before {
+    opacity:1
 }
 
 /* increase box padding */

@@ -165,13 +165,6 @@ shinyServer(function(input, output) {
                         up = TRUE
                     )
                 )
-            ),
-            tags$style(
-                HTML(
-                    '.fa {color: #212121;}
-            .bttn-jelly.bttn-default{color:#f0f0f0;}
-            .bttn-jelly:hover:before{opacity:1};'
-                )
             )
         )
         
@@ -182,7 +175,7 @@ shinyServer(function(input, output) {
     output$table_title <- renderUI({
         validate(need(nrow(area_data()) != 0, message = FALSE))
         
-        HTML(paste(h4("Population by area", style = "color:#757575;")))
+        h2("Population by area")
         
     })
     
@@ -402,9 +395,9 @@ shinyServer(function(input, output) {
         
         HTML(
             paste0(
-                h4("Age profile, ", format(
+                h2("Age profile, ", format(
                     as.Date(unique(area_data()$period), format = "%Y-%b-%d"), "%Y"
-                ), style = "color:#757575;"),
+                )),
                 prettyNum(
                     sum(area_data()[area_data()$gender == "Persons", ]$n),
                     big.mark = ",",
