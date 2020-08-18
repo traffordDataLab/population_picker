@@ -8,7 +8,7 @@ shinyUI(fluidPage(title = "Population picker",
     class = "headerContainer",
     a(
       img(
-        src = "https://github.com/traffordDataLab/traffordDataLab.github.io/raw/master/images/trafford_council_logo_black_on_white_100px.png",
+        src = "https://www.trafforddatalab.io/images/trafford_council_logo_black_on_white_100px.png",
         style = "position: relative; top: -5px;",
         height = 60,
         alt = "Trafford Council"
@@ -19,13 +19,13 @@ shinyUI(fluidPage(title = "Population picker",
     h1("Population picker")
   ),
   br(),
-  fluidRow(
-    uiOutput("pop_map"),
-    uiOutput("pop_table"),
-    uiOutput("pop_plot")
+  tags$main(
+    fluidRow(
+      uiOutput("pop_map"),
+      uiOutput("pop_table"),
+      uiOutput("pop_plot")
+    )
   ),
-  br(),
-  br(),
   br(),
   tags$footer(
       "Developed in ",
