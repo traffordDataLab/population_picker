@@ -1,25 +1,22 @@
-shinyUI(fluidPage(
+shinyUI(fluidPage(title = "Population picker",
   # Set the language of the page - important for accessibility
   tags$html(lang = "en-GB"),
   tags$head(
     tags$link(rel = "stylesheet", href = "styles.css")
   ),
-  titlePanel(
-    div(
-      class = "headerContainer",
-      a(
-        img(
-          src = "https://github.com/traffordDataLab/traffordDataLab.github.io/raw/master/images/trafford_council_logo_black_on_white_100px.png",
-          style = "position: relative; top: -5px;",
-          height = 60,
-          alt = "Trafford Council"
-        ),
-        href = "https://www.trafford.gov.uk",
-        target = "_blank"
+  tags$header(
+    class = "headerContainer",
+    a(
+      img(
+        src = "https://github.com/traffordDataLab/traffordDataLab.github.io/raw/master/images/trafford_council_logo_black_on_white_100px.png",
+        style = "position: relative; top: -5px;",
+        height = 60,
+        alt = "Trafford Council"
       ),
-      h1("Population picker")
+      href = "https://www.trafford.gov.uk",
+      target = "_blank"
     ),
-    windowTitle = "Population picker"
+    h1("Population picker")
   ),
   br(),
   fluidRow(
