@@ -35,5 +35,31 @@ shinyUI(fluidPage(title = "Population picker",
       " under the ",
       a(href = "https://www.trafforddatalab.io/LICENSE.txt", target = "_blank", "MIT"),
       " licence"
-  )
+  ),
+  HTML("
+      <script>
+          // Remove empty form labels created by Shiny
+          var cb_emptyLabels = setInterval(function() {
+              var arrEmptyLabels = document.getElementsByClassName('control-label');
+      
+              if (arrEmptyLabels.length > 0) { 
+                  var parent;
+              
+                  // try - catch in case parent nodes haven't been created yet
+                  try {
+                      do {
+                          parent = arrEmptyLabels[0].parentNode;
+                          parent.removeChild(arrEmptyLabels[0]);
+                      }
+                      while (arrEmptyLabels.length > 0);
+                      
+                      clearInterval(cb_emptyLabels); // cancel further calls to this fn
+                  }
+                  catch(e) {
+                      // do nothing, wait until function is called again next interval
+                  }
+              }
+          }, 500);
+      </script>
+  ")
 ))
