@@ -60,6 +60,42 @@ shinyUI(fluidPage(title = "Population picker",
                   }
               }
           }, 500);
+          
+          // Add aria-label to map filter button to describe its function for accessibility
+          var cb_geographyButton = setInterval(function() {
+              try {
+                  var btn = document.getElementById('geographySelection');
+                  btn.setAttribute('aria-label', 'Choose administrative or statistical geography.');
+                  clearInterval(cb_geographyButton); // cancel further calls to this fn
+              }
+              catch(e) {
+                  // do nothing, wait until function is called again next interval
+              }
+          }, 500);
+          
+          // Add aria-label to plot cog button to describe its function for accessibility
+          var cb_settingsButton = setInterval(function() {
+              try {
+                  var btn = document.getElementById('plotSettings');
+                  btn.setAttribute('aria-label', 'Plot options for the population pyramid.');
+                  clearInterval(cb_settingsButton); // cancel further calls to this fn
+              }
+              catch(e) {
+                  // do nothing, wait until function is called again next interval
+              }
+          }, 500);
+          
+          // Add aria-label to plot dowload button to describe its function for accessibility
+          var cb_downloadButton = setInterval(function() {
+              try {
+                  var btn = document.getElementById('downloadButton');
+                  btn.setAttribute('aria-label', 'Download options.');
+                  clearInterval(cb_downloadButton); // cancel further calls to this fn
+              }
+              catch(e) {
+                  // do nothing, wait until function is called again next interval
+              }
+          }, 500);
       </script>
   ")
 ))

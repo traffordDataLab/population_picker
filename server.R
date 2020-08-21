@@ -153,6 +153,7 @@ shinyServer(function(input, output) {
                             ),
                             selected = "ward"
                         ),
+                        inputId = "geographySelection",
                         icon = icon("filter"),
                         size = "s",
                         style = "jelly",
@@ -444,6 +445,7 @@ shinyServer(function(input, output) {
                             label = "England (2018)",
                             value = FALSE
                         ),
+                        inputId = "plotSettings",
                         icon = icon("cog"),
                         size = "s",
                         style = "jelly",
@@ -458,6 +460,7 @@ shinyServer(function(input, output) {
                     condition = "output.plot",
                     dropdown(
                         downloadButton(outputId = "downloadData", label = "Download data"),
+                        inputId = "downloadButton",
                         icon = icon("download"),
                         size = "s",
                         style = "jelly",
