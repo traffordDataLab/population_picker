@@ -123,6 +123,34 @@ shinyUI(fluidPage(title = "Population picker",
                   // do nothing, wait until function is called again next interval
               }
           }, 500);
+          
+          // Add fieldset around the geography radio buttons for accessibility
+          var cb_geography = setInterval(function() {
+              try {
+                  var parent = document.getElementsByClassName('shiny-options-group');  // we're only expecting 1
+                  
+                  if (parent.length > 0) {
+                      // create the new fieldset and legend nodes first
+                      legend = document.createElement('legend');
+                      legend.appendChild(document.createTextNode('Geography'));
+                      legend.setAttribute('style', 'font-size: 1em; font-weight: bold;');
+                      fieldset = document.createElement('fieldset');
+                      fieldset.appendChild(legend);
+                  
+                      // Add all the children of parent to the newly created fieldset
+                      while (parent[0].childNodes.length > 0) {
+                        fieldset.appendChild(parent[0].childNodes[0]);
+                      }
+                      
+                      parent[0].appendChild(fieldset);    // add the fieldset to the parent
+                  
+                      clearInterval(cb_geography); // cancel further calls to this fn
+                  }
+              }
+              catch(e) {
+                  // do nothing, wait until function is called again next interval
+              }
+          }, 500);
       </script>
   ")
 ))
