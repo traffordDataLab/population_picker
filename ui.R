@@ -96,6 +96,33 @@ shinyUI(fluidPage(title = "Population picker",
                   // do nothing, wait until function is called again next interval
               }
           }, 500);
+          
+          // Add labels around the radio buttons for single year and 5 year age bands for accessibility
+          var cb_yearBandChoice = setInterval(function() {
+              try {
+                  var btns = document.getElementsByName('plot_selection');
+                  var parent, label;
+                  
+                  if (btns.length > 1) {
+                    for (var i = 0; i < btns.length; i++) {
+                      parent = btns[i].parentNode;
+                      label = document.createElement('label');
+                      
+                      // Add all the children of parent to the newly created label
+                      while (parent.childNodes.length > 0) {
+                        label.appendChild(parent.childNodes[0]);
+                      }
+                      
+                      parent.appendChild(label);    // add the label to the parent
+                    }
+                  
+                    clearInterval(cb_yearBandChoice); // cancel further calls to this fn
+                  }
+              }
+              catch(e) {
+                  // do nothing, wait until function is called again next interval
+              }
+          }, 500);
       </script>
   ")
 ))
