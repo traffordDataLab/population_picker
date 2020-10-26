@@ -172,9 +172,7 @@ shinyServer(function(input, output) {
             adorn_totals("row")
         
         reactable(temp,
-                  compact = TRUE,
-                  borderless = FALSE,
-                  wrap = FALSE,
+                  bordered = TRUE,
                   resizable = TRUE,
                   columns = list(
                       area_name = colDef(name = "Area"),
