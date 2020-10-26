@@ -252,64 +252,38 @@ shinyServer(function(input, output) {
                     gender = factor(gender, levels = c("Males", "Females")),
                     age = as.integer(age),
                     percent = round(n/sum(n)*100, 1),
-                    percent = case_when(
-                        gender == "Males" ~ percent * -1, TRUE ~ as.double(percent)
-                    ),
-                    tooltip = case_when(
-                        gender == "Males" ~ paste0(
-                            "<strong>",
-                            percent * -1, "% (", comma(n), ")",
-                            "</strong><br/>",
-                            "<em>",
-                            gender,
-                            "</em><br/>",
-                            age,
-                            " years"
-                        ),
-                        TRUE ~ paste0(
-                            "<strong>",
-                            percent, "% (", comma(n), ")",
-                            "</strong><br/>",
-                            "<em>",
-                            gender,
-                            "</em><br/>",
-                            age,
-                            " years"
-                        )
-                    )
-                )
-            
+                    tooltip = paste0(
+                        "<strong>",
+                        percent, "% (", comma(n, accuracy = 1), ")",
+                        "</strong><br/>",
+                        "<em>",
+                        gender,
+                        "</em><br/>",
+                        age,
+                        " years"
+                    ))
+                
             gg <-
-                ggplot(df, aes(
-                    x = age,
-                    y = percent,
-                    fill = gender
-                )) +
-                geom_bar_interactive(aes(tooltip = tooltip),
-                                     stat = "identity", alpha = 0.6) +
-                scale_x_continuous(breaks = seq(
-                    from = 0,
-                    to = 90,
-                    by = 5
-                )) +
-                scale_fill_manual(
-                    values = c("#7FC5DC", "#7FDCC5"),
-                    labels = c("Female", "Male")
-                ) +
-                facet_share(
-                    ~ gender,
-                    dir = "h",
-                    scales = "free",
-                    reverse_num = TRUE
-                ) +
-                coord_flip() +
+                ggplot(df, aes(x = age, y = ifelse(gender == "Males", -percent, percent), fill = gender)) +
+                geom_bar_interactive(aes(tooltip = tooltip),  stat = "identity", alpha = 0.6) +
+                scale_y_continuous(labels = abs) +
+                scale_fill_manual(values = c("Males" = "#7FC5DC", "Females" = "#7FDCC5")) +
                 labs(
                     x = NULL,
                     y = "% of total population",
                     caption = "Source: Office for National Statistics",
                     fill = NULL
                 ) +
-                theme_x()
+                coord_flip() +
+                theme_minimal(base_size = 12) +
+                theme(plot.margin = unit(rep(0.5, 4), "cm"),
+                      panel.grid.major.y = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      plot.title.position = "plot",
+                      plot.title = element_text(size = 14, face = "bold"),
+                      plot.subtitle = element_text(size = 12, margin = margin(b = 20)),
+                      plot.caption = element_text(colour = "grey60", margin = margin(t = 20, b = -10)),
+                      legend.position = "none")
             
             if(input$england == TRUE){
                 gg <- gg + geom_line(data = england_data(), 
@@ -328,60 +302,42 @@ shinyServer(function(input, output) {
                 group_by(gender, ageband) %>%
                 summarise(n = sum(n)) %>% 
                 ungroup() %>% 
-                mutate(gender = factor(gender, levels = c("Males", "Females")),
-                        percent = round(n/sum(n)*100, 1),
-                        percent = case_when(
-                            gender == "Males" ~ percent * -1, TRUE ~ as.double(percent)),
-                        tooltip = case_when(
-                        gender == "Males" ~ paste0(
-                            "<strong>",
-                            percent * -1, "% (", comma(n), ")",
-                            "</strong><br/>",
-                            "<em>",
-                            gender,
-                            "</em><br/>",
-                            ageband,
-                            " years"
-                        ),
-                        TRUE ~ paste0(
-                            "<strong>",
-                            percent, "% (", comma(n), ")",
-                            "</strong><br/>",
-                            "<em>",
-                            gender,
-                            "</em><br/>",
-                            ageband,
-                            " years"
-                        )
-                    )
-                )
+                mutate(
+                    gender = factor(gender, levels = c("Males", "Females")),
+                    age = as.integer(ageband),
+                    percent = round(n/sum(n)*100, 1),
+                    tooltip = paste0(
+                        "<strong>",
+                        percent, "% (", comma(n, accuracy = 1), ")",
+                        "</strong><br/>",
+                        "<em>",
+                        gender,
+                        "</em><br/>",
+                        ageband,
+                        " years"
+                    ))
             
             gg <-
-                ggplot(df, aes(
-                    x = ageband,
-                    y = percent,
-                    fill = gender
-                )) +
-                geom_bar_interactive(aes(tooltip = tooltip),
-                                     stat = "identity", alpha = 0.6) +
-                scale_fill_manual(
-                    values = c("#7FC5DC", "#7FDCC5"),
-                    labels = c("Female", "Male")
-                ) +
-                facet_share(
-                    ~ gender,
-                    dir = "h",
-                    scales = "free",
-                    reverse_num = TRUE
-                ) +
-                coord_flip() +
+                ggplot(df, aes(x = ageband, y = ifelse(gender == "Males", -percent, percent), fill = gender)) +
+                geom_bar_interactive(aes(tooltip = tooltip), stat = "identity", alpha = 0.6) +
+                scale_y_continuous(labels = abs) +
+                scale_fill_manual(values = c("Males" = "#7FC5DC", "Females" = "#7FDCC5")) +
                 labs(
                     x = NULL,
                     y = "% of total population",
                     caption = "Source: Office for National Statistics",
                     fill = NULL
                 ) +
-                theme_x()
+                coord_flip() +
+                theme_minimal(base_size = 12) +
+                theme(plot.margin = unit(rep(0.5, 4), "cm"),
+                      panel.grid.major.y = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      plot.title.position = "plot",
+                      plot.title = element_text(size = 14, face = "bold"),
+                      plot.subtitle = element_text(size = 12, margin = margin(b = 20)),
+                      plot.caption = element_text(colour = "grey60", margin = margin(t = 20, b = -10)),
+                      legend.position = "none")
             
             if(input$england == TRUE){
                 gg <- gg + geom_line(data = england_data(), 
@@ -453,7 +409,7 @@ shinyServer(function(input, output) {
                         ),
                         checkboxInput(
                             inputId = "england",
-                            label = "England (2018)",
+                            label = "England (2019)",
                             value = FALSE
                         ),
                         icon = icon("cog"),
