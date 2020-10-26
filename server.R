@@ -161,24 +161,30 @@ shinyServer(function(input, output) {
         
     })
     
-    output$table <- renderTable({
+    output$table <- renderReactable({
         validate(need(nrow(area_data()) != 0, message = FALSE))
         
-        area_data() %>%
+        temp <- area_data() %>%
             select(area_name, gender, age, n) %>%
             group_by(area_name, gender) %>%
             summarise(n = sum(n)) %>%
             spread(gender, n) %>%
-            rename(Area = area_name) %>%
-            adorn_totals("row") %>%
-            mutate(
-                Females = prettyNum(Females, big.mark = ",", scientific = FALSE),
-                Males = prettyNum(Males, big.mark = ",", scientific = FALSE),
-                Persons = prettyNum(Persons, big.mark = ",", scientific = FALSE)
-            ) %>% 
-            select(Area, Males, Females, Persons)
+            adorn_totals("row")
         
-    }, bordered = TRUE, align = 'l')
+        reactable(temp,
+                  compact = TRUE,
+                  borderless = FALSE,
+                  wrap = FALSE,
+                  resizable = TRUE,
+                  columns = list(
+                      area_name = colDef(name = "Area"),
+                      Females = colDef(format = colFormat(separators = TRUE)),
+                      Males = colDef(format = colFormat(separators = TRUE)),
+                      Persons = colDef(format = colFormat(separators = TRUE))
+                  )
+                  )
+        
+    })
     
     
     output$downloadData <- downloadHandler(
@@ -209,7 +215,7 @@ shinyServer(function(input, output) {
                 width = '100%',
                 align = "center",
                 uiOutput("table_title"),
-                tableOutput('table')
+                reactableOutput('table')
             ))
     })
     
