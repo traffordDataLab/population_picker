@@ -16,12 +16,7 @@ shinyServer(function(input, output) {
     })
     
     pyramid_data <- reactive({
-        if (input$plot_selection == "single_year") {
-            df <- area_data() %>%
-                filter(area_code %in% clickedIds$ids, gender != "Persons")
-        }
-        else {
-            df <- area_data() %>%
+        area_data() %>%
                 filter(area_code %in% clickedIds$ids, gender != "Persons") %>%
                 mutate(age = as.integer(age),
                     ageband = cut(
@@ -37,25 +32,10 @@ shinyServer(function(input, output) {
                         right = FALSE
                     )
                 )
-        }
-        
     })
     
     england_data <- reactive({
-        if (input$plot_selection == "single_year") {
-            df <- england %>% 
-                group_by(gender, age) %>% 
-                summarise(n = sum(n)) %>%
-                ungroup() %>% 
-                mutate(gender = factor(gender, levels = c("Males", "Females")),
-                       percent = round(n/sum(n)*100, 1),
-                       percent = 
-                           case_when(
-                               gender == "Males" ~ percent*-1,
-                               TRUE ~ as.double(percent)))
-        }
-        else {
-            df <- england %>%
+        df <- england %>%
                 mutate(ageband = cut(age,
                                      breaks = c(0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,120),
                                      labels = c("0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39",
@@ -69,12 +49,7 @@ shinyServer(function(input, output) {
                        percent = round(n/sum(n)*100, 1),
                        percent = case_when(
                            gender == "Males" ~ percent * -1, TRUE ~ as.double(percent)))
-            
-            
-            
-        }
-        
-    })
+        })
 
             
     ## Map ------------------------------------------------
@@ -243,62 +218,7 @@ shinyServer(function(input, output) {
     output$plot <- renderggiraph({
         validate(need(nrow(area_data()) != 0, message = FALSE))
         
-        if (input$plot_selection == "single_year") {
-            df <- pyramid_data() %>%
-                group_by(gender, age) %>%
-                summarise(n = sum(n)) %>% 
-                ungroup() %>% 
-                mutate(
-                    gender = factor(gender, levels = c("Males", "Females")),
-                    age = as.integer(age),
-                    percent = round(n/sum(n)*100, 1),
-                    tooltip = paste0(
-                        "<strong>",
-                        percent, "% (", comma(n, accuracy = 1), ")",
-                        "</strong><br/>",
-                        "<em>",
-                        gender,
-                        "</em><br/>",
-                        age,
-                        " years"
-                    ))
-                
-            gg <-
-                ggplot(df, aes(x = age, y = ifelse(gender == "Males", -percent, percent), fill = gender)) +
-                geom_bar_interactive(aes(tooltip = tooltip),  stat = "identity", alpha = 0.6) +
-                scale_y_continuous(labels = abs) +
-                scale_fill_manual(values = c("Males" = "#7FC5DC", "Females" = "#7FDCC5")) +
-                labs(
-                    x = NULL,
-                    y = "% of total population",
-                    caption = "Source: Office for National Statistics",
-                    fill = NULL
-                ) +
-                coord_flip() +
-                theme_minimal(base_size = 12) +
-                theme(plot.margin = unit(rep(0.5, 4), "cm"),
-                      panel.grid.major.y = element_blank(),
-                      panel.grid.minor = element_blank(),
-                      plot.title.position = "plot",
-                      plot.title = element_text(size = 14, face = "bold"),
-                      plot.subtitle = element_text(size = 12, margin = margin(b = 20)),
-                      plot.caption = element_text(colour = "grey60", margin = margin(t = 20, b = -10)),
-                      legend.position = "none")
-            
-            if(input$england == TRUE){
-                gg <- gg + geom_line(data = england_data(), 
-                                     aes(x = age, y = percent, group = gender, colour = gender), stat = "identity", size = 1) +
-                    scale_colour_manual(values = c("#7FC5DC", "#7FDCC5"), labels = c("Female", "Male"))
-            }
-            
-            gg <- girafe(ggobj = gg)
-            girafe_options(gg,
-                           opts_tooltip(use_fill = TRUE),
-                           opts_toolbar(saveaspng = FALSE))
-            
-        }
-        else {
-            df <- pyramid_data() %>%
+        df <- pyramid_data() %>%
                 group_by(gender, ageband) %>%
                 summarise(n = sum(n)) %>% 
                 ungroup() %>% 
@@ -337,6 +257,7 @@ shinyServer(function(input, output) {
                       plot.title = element_text(size = 14, face = "bold"),
                       plot.subtitle = element_text(size = 12, margin = margin(b = 20)),
                       plot.caption = element_text(colour = "grey60", margin = margin(t = 20, b = -10)),
+                      axis.title.x = element_text(size = 10),
                       legend.position = "none")
             
             if(input$england == TRUE){
@@ -349,8 +270,6 @@ shinyServer(function(input, output) {
             girafe_options(gg,
                            opts_tooltip(use_fill = TRUE),
                            opts_toolbar(saveaspng = FALSE))
-            
-        }
     })
     
     output$plot_title <- renderUI({
@@ -399,14 +318,6 @@ shinyServer(function(input, output) {
                 conditionalPanel(
                     condition = "output.plot",
                     dropdown(
-                        radioGroupButtons(
-                            inputId = "plot_selection",
-                            label = NULL,
-                            choiceNames = c("Single year of age", "Five year age bands"),
-                            choiceValues = c("single_year", "five_years"),
-                            direction = "vertical",
-                            selected = "single_year"
-                        ),
                         checkboxInput(
                             inputId = "england",
                             label = "England (2019)",
