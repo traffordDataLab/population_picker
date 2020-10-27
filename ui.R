@@ -21,6 +21,11 @@ shinyUI(fluidPage(
   ),
   br(),
   fluidRow(
+    div(class = "col-sm-4",
+        includeHTML("help.html")
+        )
+    ),
+  fluidRow(
     uiOutput("pop_map"),
     uiOutput("pop_plot"),
     uiOutput("pop_table")

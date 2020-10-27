@@ -54,7 +54,6 @@ shinyServer(function(input, output) {
             addPolygons(
                 data = layer(),
                 fillColor = "transparent",
-                fillOpacity = 0.4,
                 color = "#000000",
                 stroke = T,
                 weight = 1,
@@ -91,7 +90,7 @@ shinyServer(function(input, output) {
             proxy %>% addPolygons(
                 data = clickedPolys,
                 fillColor = "#FFFF00",
-                fillOpacity = 0.4,
+                fillOpacity = 1,
                 weight = 1,
                 color = "#212121",
                 stroke = T,
@@ -102,10 +101,9 @@ shinyServer(function(input, output) {
     
     output$pop_map <- renderUI({
         div(
-            class = "col-sm-3",
+            class = "col-sm-4",
             box(
                 width = '100%',
-                includeHTML("help.html"),
                 leafletOutput("map"),
                 div(
                     style = "position: absolute; left: 1.7em; bottom: 4em;",
@@ -115,7 +113,7 @@ shinyServer(function(input, output) {
                             label = NULL,
                             choices = list(
                                 "Trafford" = "la",
-                                "Wards" = "ward",
+                                "Ward" = "ward",
                                 "Middle-layer Super Output Area" = "msoa",
                                 "Lower-layer Super Output Area" = "lsoa",
                                 "Output Area" = "oa"
@@ -236,23 +234,21 @@ shinyServer(function(input, output) {
                 ggplot(df, aes(x = ageband, y = ifelse(gender == "Males", -percent, percent), fill = gender)) +
                 geom_bar_interactive(aes(tooltip = tooltip), stat = "identity", alpha = 0.6) +
                 scale_y_continuous(labels = abs) +
-                scale_fill_manual(values = c("Males" = "#7FC5DC", "Females" = "#7FDCC5")) +
+                scale_fill_manual(values = c("Males" = "#44B7C2", "Females" = "#024B7A")) +
                 labs(
                     x = NULL,
                     y = "% of total population",
-                    caption = "Source: Office for National Statistics",
-                    fill = NULL
+                    title = NULL,
+                    subtitle = NULL,
+                    caption = "Source: Office for National Statistics"
                 ) +
                 coord_flip() +
-                theme_minimal(base_size = 12) +
+                theme_minimal(base_size = 14, base_family = "Open Sans") +
                 theme(plot.margin = unit(rep(0.5, 4), "cm"),
                       panel.grid.major.y = element_blank(),
                       panel.grid.minor = element_blank(),
-                      plot.title.position = "plot",
-                      plot.title = element_text(size = 14, face = "bold"),
-                      plot.subtitle = element_text(size = 12, margin = margin(b = 20)),
                       plot.caption = element_text(colour = "grey60", margin = margin(t = 20, b = -10)),
-                      axis.title.x = element_text(size = 10),
+                      axis.title.x = element_text(),
                       legend.position = "none")
 
             gg <- girafe(ggobj = gg)
