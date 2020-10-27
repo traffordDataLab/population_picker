@@ -44,12 +44,3 @@ all_geographies <- bind_rows(la, ward, msoa, lsoa, oa) %>%
   mutate(age = as.integer(age))
 
 write_csv(all_geographies, "mid-2019_population_estimates_all_geographies.csv")
-
-# England
-england <- read_csv("http://www.nomisweb.co.uk/api/v01/dataset/NM_2002_1.data.csv?geography=2092957699&date=latest&gender=1,2&c_age=101...191&measures=20100&select=date_name,geography_name,geography_code,gender_name,c_age_name,measures_name,obs_value,obs_status_name") %>% 
-  select(area_name = GEOGRAPHY_NAME, gender = GENDER_NAME, age = C_AGE_NAME, n = OBS_VALUE) %>% 
-  mutate(gender = fct_recode(gender, "Females" = "Female" , "Males" = "Male"),
-         age = as.integer(parse_number(age)))
-
-write_csv(england, "mid-2019_population_estimates_england.csv")
-

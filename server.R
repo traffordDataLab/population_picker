@@ -1,3 +1,10 @@
+library(shiny) ; library(tidyverse) ; library(scales) ; library(ggpol) ; library(sf)
+library(leaflet) ; library(htmlwidgets) ; library(janitor) ; library(shinydashboard)
+library(shinyWidgets) ; library(ggiraph) ; library(reactable)
+
+pop <- read_csv("data/mid-2019_population_estimates_all_geographies.csv")
+
+
 shinyServer(function(input, output) {
     
     layer <- reactive({
@@ -33,25 +40,7 @@ shinyServer(function(input, output) {
                     )
                 )
     })
-    
-    england_data <- reactive({
-        df <- england %>%
-                mutate(ageband = cut(age,
-                                     breaks = c(0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,120),
-                                     labels = c("0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39",
-                                                "40-44","45-49","50-54","55-59","60-64","65-69","70-74",
-                                                "75-79","80-84","85-89","90+"),
-                                     right = FALSE)) %>% 
-                group_by(gender, ageband) %>%
-                summarise(n = sum(n)) %>% 
-                ungroup() %>% 
-                mutate(gender = factor(gender, levels = c("Males", "Females")),
-                       percent = round(n/sum(n)*100, 1),
-                       percent = case_when(
-                           gender == "Males" ~ percent * -1, TRUE ~ as.double(percent)))
-        })
 
-            
     ## Map ------------------------------------------------
     
     output$map <- renderLeaflet({
@@ -59,14 +48,14 @@ shinyServer(function(input, output) {
             setMaxBounds(-2.478454, 53.357425,-2.253022, 53.480362) %>%
             addTiles(
                 urlTemplate = "",
-                attribution = '<a href="https://www.ons.gov.uk/methodology/geography/licences">Contains OS data © Crown copyright and database right (2019)</a>',
+                attribution = '<a href="https://www.ons.gov.uk/methodology/geography/licences">Contains OS data © Crown copyright and database right (2020)</a>',
                 options = tileOptions(minZoom = 11, maxZoom = 17)
             ) %>%
             addPolygons(
                 data = layer(),
                 fillColor = "transparent",
                 fillOpacity = 0.4,
-                color = "#212121",
+                color = "#000000",
                 stroke = T,
                 weight = 1,
                 label = layer()$area_name,
@@ -113,7 +102,7 @@ shinyServer(function(input, output) {
     
     output$pop_map <- renderUI({
         div(
-            class = "col-sm-12 col-md-6 col-lg-4",
+            class = "col-sm-3",
             box(
                 width = '100%',
                 includeHTML("help.html"),
@@ -125,18 +114,18 @@ shinyServer(function(input, output) {
                             "geography",
                             label = NULL,
                             choices = list(
-                                "District" = "la",
-                                "Ward" = "ward",
-                                "MSOA" = "msoa",
-                                "LSOA" = "lsoa",
-                                "OA" = "oa"
+                                "Trafford" = "la",
+                                "Wards" = "ward",
+                                "Middle-layer Super Output Area" = "msoa",
+                                "Lower-layer Super Output Area" = "lsoa",
+                                "Output Area" = "oa"
                             ),
                             selected = "ward"
                         ),
                         icon = icon("filter"),
                         size = "s",
                         style = "jelly",
-                        width = "110px",
+                        width = "280px",
                         up = TRUE
                     )
                 )
@@ -154,32 +143,26 @@ shinyServer(function(input, output) {
     
     ## Areas ------------------------------------------------
     
-    output$table_title <- renderUI({
-        validate(need(nrow(area_data()) != 0, message = FALSE))
-        
-        HTML(paste(h4("Population by area", style = "color:#757575;")))
-        
-    })
-    
-    output$table <- renderReactable({
+   output$table <- renderReactable({
         validate(need(nrow(area_data()) != 0, message = FALSE))
         
         temp <- area_data() %>%
             select(area_name, gender, age, n) %>%
             group_by(area_name, gender) %>%
             summarise(n = sum(n)) %>%
-            spread(gender, n) %>%
-            adorn_totals("row")
+            spread(gender, n)
         
         reactable(temp,
                   bordered = TRUE,
+                  compact = TRUE,
                   resizable = TRUE,
                   columns = list(
-                      area_name = colDef(name = "Area"),
-                      Females = colDef(format = colFormat(separators = TRUE)),
-                      Males = colDef(format = colFormat(separators = TRUE)),
-                      Persons = colDef(format = colFormat(separators = TRUE))
-                  )
+                      area_name = colDef(name = "Area", footer = "Total"),
+                      Females = colDef(format = colFormat(separators = TRUE), footer = function(values) sprintf(prettyNum(sum(values), big.mark = ","))),
+                      Males = colDef(format = colFormat(separators = TRUE), footer = function(values) sprintf(prettyNum(sum(values), big.mark = ","))),
+                      Persons = colDef(format = colFormat(separators = TRUE), footer = function(values) sprintf(prettyNum(sum(values), big.mark = ",")))
+                  ),
+                  defaultColDef = colDef(footerStyle = list(fontWeight = "bold"))
                   )
         
     })
@@ -190,12 +173,7 @@ shinyServer(function(input, output) {
             paste("mid-year_population_estimates.csv", sep = "")
         },
         content = function(file) {
-            
-            if (input$plot_selection == "single_year") {
-                write.csv(pyramid_data(), file, row.names = FALSE)
-            }
-            else {
-                write.csv(pyramid_data() %>%
+            write.csv(pyramid_data() %>%
                               group_by(period,
                                        area_code,
                                        area_name,
@@ -203,17 +181,30 @@ shinyServer(function(input, output) {
                                        gender,
                                        ageband) %>%
                               summarise(n = sum(n)), file, row.names = FALSE)
-            }
         }
     )
     
     output$pop_table <- renderUI({
-        div(class = "col-sm-12 col-md-6 col-lg-4",
+        div(class = "col-sm-4",
             box(
                 width = '100%',
                 align = "center",
                 uiOutput("table_title"),
                 reactableOutput('table')
+            ),
+            div(
+                style = "position: absolute; right: 1.5em; bottom: -2em;",
+                conditionalPanel(
+                    condition = "output.plot",
+                    dropdown(
+                        downloadButton(outputId = "downloadData", label = "Download data"),
+                        icon = icon("download"),
+                        size = "s",
+                        style = "jelly",
+                        up = FALSE,
+                        right = TRUE
+                    )
+                )
             ))
     })
     
@@ -263,12 +254,6 @@ shinyServer(function(input, output) {
                       plot.caption = element_text(colour = "grey60", margin = margin(t = 20, b = -10)),
                       axis.title.x = element_text(size = 10),
                       legend.position = "none")
-            
-            if(input$england == TRUE){
-                gg <- gg + geom_line(data = england_data(), 
-                                     aes(x = ageband, y = percent, group = gender, colour = gender), stat = "identity", size = 1) +
-                    scale_colour_manual(values = c("#7FC5DC", "#7FDCC5"), labels = c("Female", "Male"))
-            }
 
             gg <- girafe(ggobj = gg)
             girafe_options(gg,
@@ -281,15 +266,12 @@ shinyServer(function(input, output) {
         
         HTML(
             paste0(
-                h4("Age profile, ", format(
-                    as.Date(unique(area_data()$period), format = "%Y-%b-%d"), "%Y"
-                ), style = "color:#757575;"),
-                prettyNum(
+                strong(prettyNum(
                     sum(area_data()[area_data()$gender == "Persons", ]$n),
                     big.mark = ",",
                     scientific = FALSE
                 ),
-                " residents",
+                " residents"),
                 br(),
                 round(
                     sum(area_data()[area_data()$gender == "Males", ]$n) / sum(area_data()[area_data()$gender == "Persons", ]$n) *
@@ -309,45 +291,13 @@ shinyServer(function(input, output) {
     
     output$pop_plot <- renderUI({
         div(
-            class = "col-sm-12 col-md-6 col-lg-4",
+            class = "col-sm-4",
             box(
                 width = '100%',
                 align = "center",
                 htmlOutput("plot_title", inline = TRUE),
-                ggiraphOutput("plot"),
-                br()
-            ),
-            div(
-                style = "position: absolute; left: 1.5em; bottom: 0.5em;",
-                conditionalPanel(
-                    condition = "output.plot",
-                    dropdown(
-                        checkboxInput(
-                            inputId = "england",
-                            label = "England (2019)",
-                            value = FALSE
-                        ),
-                        icon = icon("cog"),
-                        size = "s",
-                        style = "jelly",
-                        width = "200px",
-                        up = TRUE
-                    )
-                )
-            ),
-            div(
-                style = "position: absolute; left: 4.5em; bottom: 0.5em;",
-                conditionalPanel(
-                    condition = "output.plot",
-                    dropdown(
-                        downloadButton(outputId = "downloadData", label = "Download data"),
-                        icon = icon("download"),
-                        size = "s",
-                        style = "jelly",
-                        up = TRUE
-                    )
-                )
-            )
+                ggiraphOutput("plot")
+        )
         )
         
     })
