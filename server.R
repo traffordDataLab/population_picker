@@ -89,8 +89,8 @@ shinyServer(function(input, output) {
         } else {
             proxy %>% addPolygons(
                 data = clickedPolys,
-                fillColor = "#FFFF00",
-                fillOpacity = 1,
+                fillColor = "#bdbdbd",
+                fillOpacity = 0.4,
                 weight = 1,
                 color = "#212121",
                 stroke = T,
