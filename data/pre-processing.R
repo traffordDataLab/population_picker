@@ -1,7 +1,7 @@
-# Mid-2019 population estimates
+# Mid-2020 population estimates
 
 # Source: ONS
-# URL: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/bulletins/annualmidyearpopulationestimates/mid2018
+# URL: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/bulletins/annualmidyearpopulationestimates/mid2020
 # Licence: Open Government Licence v3.0
 
 library(tidyverse) ; library(lubridate)
@@ -43,4 +43,4 @@ all_geographies <- bind_rows(la, ward, msoa, lsoa, oa) %>%
   gather(age, n, -period, -area_code, -area_name, -geography, -gender) %>%
   mutate(age = as.integer(age))
 
-write_csv(all_geographies, "mid-2019_population_estimates_all_geographies.csv")
+write_csv(all_geographies, "mid-year_population_estimates_all_geographies.csv")

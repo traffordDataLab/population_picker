@@ -2,7 +2,7 @@ library(shiny) ; library(tidyverse) ; library(scales) ; library(ggpol) ; library
 library(leaflet) ; library(htmlwidgets) ; library(janitor) ; library(shinydashboard)
 library(shinyWidgets) ; library(ggiraph) ; library(reactable)
 
-pop <- read_csv("data/mid-2019_population_estimates_all_geographies.csv")
+pop <- read_csv("data/mid-year_population_estimates_all_geographies.csv")
 
 
 shinyServer(function(input, output) {
@@ -48,7 +48,7 @@ shinyServer(function(input, output) {
             setMaxBounds(-2.478454, 53.357425,-2.253022, 53.480362) %>%
             addTiles(
                 urlTemplate = "",
-                attribution = '<a href="https://www.ons.gov.uk/methodology/geography/licences">Contains OS data © Crown copyright and database right (2020)</a>',
+                attribution = '<a href="https://www.ons.gov.uk/methodology/geography/licences">Contains OS data © Crown copyright and database right (2021)</a>',
                 options = tileOptions(minZoom = 11, maxZoom = 17)
             ) %>%
             addPolygons(
