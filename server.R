@@ -142,7 +142,7 @@ shinyServer(function(input, output) {
     ## Areas ------------------------------------------------
     
    output$table <- renderReactable({
-        validate(need(nrow(area_data()) != 0, message = FALSE))
+     shiny::validate(need(nrow(area_data()) != 0, message = FALSE))
         
         temp <- area_data() %>%
             select(area_name, gender, age, n) %>%
@@ -208,8 +208,8 @@ shinyServer(function(input, output) {
     
     ## Plot ------------------------------------------------
     
-    output$plot <- renderggiraph({
-        validate(need(nrow(area_data()) != 0, message = FALSE))
+    output$plot <- renderGirafe({
+        shiny::validate(need(nrow(area_data()) != 0, message = FALSE))
         
         df <- pyramid_data() %>%
                 group_by(gender, ageband) %>%
@@ -229,7 +229,7 @@ shinyServer(function(input, output) {
                         ageband,
                         " years"
                     ))
-            
+          
             gg <-
                 ggplot(df, aes(x = ageband, y = ifelse(gender == "Males", -percent, percent), fill = gender)) +
                 geom_bar_interactive(aes(tooltip = tooltip), stat = "identity", alpha = 0.6) +
@@ -258,10 +258,14 @@ shinyServer(function(input, output) {
     })
     
     output$plot_title <- renderUI({
-        validate(need(nrow(area_data()) != 0,  message = FALSE))
+      shiny::validate(need(nrow(area_data()) != 0,  message = FALSE))
         
         HTML(
-            paste0(
+          paste0(
+            "Mid-year ",
+            strong(format(pyramid_data()$period[[1]], "%Y")),
+          br(),
+            #paste0(
                 strong(prettyNum(
                     sum(area_data()[area_data()$gender == "Persons", ]$n),
                     big.mark = ",",
@@ -292,7 +296,7 @@ shinyServer(function(input, output) {
                 width = '100%',
                 align = "center",
                 htmlOutput("plot_title", inline = TRUE),
-                ggiraphOutput("plot")
+                girafeOutput("plot")
         )
         )
         
