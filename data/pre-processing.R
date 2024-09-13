@@ -1,4 +1,4 @@
-# Mid-2022 population estimates
+# Mid-2023 for LA and Mid-2022 population estimates for other areas
 
 # Source: ONS
 # URL: https://www.ons.gov.uk/releases/populationestimatesbyoutputareaselectoralhealthandothergeographiesenglandandwalesmid2021andmid2022
@@ -7,7 +7,7 @@
 library(httr) ; library(readxl) ; library(tidyverse)
 
 # Local authority
-la <- read_csv("http://www.nomisweb.co.uk/api/v01/dataset/NM_2002_1.data.csv?geography=1820327969&date=latest&gender=0...2&c_age=101...191&measures=20100&select=date_name,geography_name,geography_code,gender_name,c_age_name,measures_name,obs_value,obs_status_name") %>% 
+la <- read_csv("https://www.nomisweb.co.uk/api/v01/dataset/NM_2002_1.data.csv?geography=1778385132&date=latest&gender=0...2&c_age=101...191&measures=20100") %>% 
   mutate(geography = "Local authority") %>% 
   select(period = DATE_NAME,
          area_code = GEOGRAPHY_CODE,
@@ -21,6 +21,7 @@ la <- read_csv("http://www.nomisweb.co.uk/api/v01/dataset/NM_2002_1.data.csv?geo
          age = as.integer(str_trim(str_replace_all(age, "Age.|\\+", ""))))  %>% 
   spread(age, count) %>% 
   gather(age, n, -period, -area_code, -area_name, -geography, -sex)
+
 # Electoral ward
 
 tmp <- tempfile(fileext = ".xlsx")
